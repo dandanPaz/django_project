@@ -147,12 +147,14 @@ class Customer(APIView):
             my_model = Customers.objects.get(id=id)
             serializer = CustomerSerializer(my_model, many=False)
         else:
-            my_model = Customers.objects.all()
+            # my_model = Customers.objects.all()
+            my_model=request.user.customers_set.all()
             serializer =CustomerSerializer(my_model, many=True)
         return Response(serializer.data)
 
     def post(self, request):  # axios.post
-        serializer = CustomerSerializer(data=request.data)
+        print(request.user)
+        serializer = CustomerSerializer(data=request.data, context={'user': request.user})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

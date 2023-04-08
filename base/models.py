@@ -1,5 +1,6 @@
 from django.db import models
 from phone_field import PhoneField
+from django.contrib.auth.models import User
 
 
 
@@ -21,6 +22,8 @@ class Customers(models.Model):
     Email = models.CharField(max_length=50,null=True,blank=True)
     createdTime=models.DateTimeField(auto_now_add=True)
     image = models.ImageField(null=False,blank=False,default='/placeholder.png')
+    user =models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+
 
     fields =['Name','Phone','Address','Email','image']
  

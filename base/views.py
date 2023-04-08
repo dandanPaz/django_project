@@ -10,11 +10,26 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import status
+from django.contrib.auth.models import User
 
 
 
 def index(req):
     return JsonResponse('hello', safe=False)
+
+# def login_page(request):
+#     context = {
+#         'title': 'My Page Title',
+#         'message': 'Welcome to my page!'
+#     }
+#     return render(request, 'login.html', context)
+
+# def Customers_page(request):
+#     context = {
+#         'title': 'My Page Title',
+#         'message': 'Welcome to my page!'
+#     }
+#     return render(request, 'Customers.html', context)
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -31,6 +46,19 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
  
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+@api_view(['POST'])
+def register(request):
+    user = User.objects.create_user(
+                username=request.data['username'],
+                email=request.data['email'],
+                password=request.data['password']
+            )
+    user.is_active = True
+    user.is_staff = True
+    user.save()
+    return Response("new user born")
 
 
 @api_view(['GET','POST','DELETE','PUT','PATCH'])

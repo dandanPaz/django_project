@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link href="/static/cu.less" rel="stylesheet/less" type="text/css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+
+
+</head>
+
+
+<body>
+
+    <ul>
+        <li><a class="active" href="#" id="userName"></a></li>
+        <li><a class="active" href="home.html">Home</a></li>
+        <li><a href="login.html">login</a></li>
+        <li><a href="Customers.html">Customers</a></li>
+        <li><a href="#about">About</a></li>
+    </ul>
+
+
+
+    <div class="container" style="color:whitesmoke;">
+        <div class="d-flex bd-highlight mb-3">
+            <div class="me-auto p-2 bd-highlight">
+                <h1>Customers</h1>
+            </div>
+            <div class="p-2 bd-highlight">
+
+            </div>
+        </div>
+        <div id="display"></div>
+        <button onclick="load_data()">Open Customers</button>
+
+
+        <div class="add-form" id="add-form">
+            <h3>Add Record</h3>
+            <form id="create-item-form">
+                <label for="add-name">Name:</label>
+                <br>
+                <input type="text" id="add-name" name="add-name" size="100" />
+                <br>
+
+                <label for="add-Email">Email:</label>
+                <br>
+                <input type="text" id="add-Email" name="add-Email" size="100" />
+                <br>
+                <label for="add-Address">Address:</label>
+                <br>
+                <input type="text" id="add-Address" name="add-Address" size="100" />
+                <br>
+                <label for="add-Phone">Phone:</label>
+                <br>
+                <input type="number" id="add-Phone" name="add-Phone" size="100" />
+                <br>
+                <br>
+                <label for="add-Image">Image:</label>
+                <input type="file" name="add-Image" id="image">
+                <br>
+
+                <button type="button" id="add-new" onclick="AddNew_data()">create</button>
+
+            </form>
+        </div>
+        <br>
+
+
+
+        <div class="table-responsive">
+            <table class="table" id="data-table">
+                <thead>
+                    <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Image</th>
+                        <th scope="col">Edit</th>
+                        <th scope="col">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+
+
+
+        <div class="edit-form" id="edit-form" style="display:none;">
+            <h2>Edit Record</h2>
+            <form id="edit-item-form">
+                <input type="hidden" id="edit-id" name="id" />
+                <label for="edit-name">Name:</label>
+                <input type="text" id="edit-name" name="name" />
+                <br>
+                <label for="edit-Phone">Phone:</label>
+                <input type="number" id="edit-Phone" name="Phone" />
+                <br>
+                <label for="edit-Email">Email:</label>
+                <input type="text" id="edit-Email" name="Email" />
+                <br>
+                <label for="edit-Address">Address:</label>
+                <input type="text" id="edit-Address" name="Address" />
+                <br>
+                <label for="edit-image">Image:</label>
+                <input type="file" id="edit-image" name="image" />
+                <br>
+                <!-- <input type="submit" value="Save"> -->
+                <button type="button" id="edit-save" onclick="edit_data2()">save</button>
+                <button type="button" id="edit-cancel" onclick="HideEditForm()">Cancel</button>
+            </form>
+        </div>
+
+    </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+        var Ulogin = localStorage.getItem('Uname');
+        var usernameElement = document.getElementById("userName");
+        usernameElement.textContent = "Hello" + " " + Ulogin + "!";
+    </script>
+
+
+    <script>
+        let token = ""
+        const MY_SERVER = 'http://127.0.0.1:8000/customers/'
+        const SERVER = 'http://127.0.0.1:8000'
+
+
+
+        //////LOAD DATA/////////////////////////////
+
+        const load_data = async () => {
+            if (!token) { token = localStorage.getItem('token') }
+            console.log(token)
+            if (token) {
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+
+
+                var table = document.getElementById("data-table"); // replace "myTable" with the ID of your table
+                var rowCount = table.rows.length;
+
+                for (var i = rowCount - 1; i > 0; i--) {
+                    table.deleteRow(i);
+                }
+
+
+
+                const res = await axios.get(MY_SERVER, config).then(response => {
+                    const tableBody = document.querySelector('#data-table tbody');
+                    response.data.forEach(item => {
+                        const newRow = tableBody.insertRow();
+
+                        const IdCell = newRow.insertCell();
+                        const NameCell = newRow.insertCell();
+                        const PhoneCell = newRow.insertCell();
+                        const EmailCell = newRow.insertCell();
+                        const AddressCell = newRow.insertCell();
+                        const imageCell = newRow.insertCell();
+                        const editCell = newRow.insertCell();
+                        const deleteCell = newRow.insertCell();
+
+                        IdCell.innerHTML = item.id;
+                        NameCell.innerHTML = item.Name;
+                        PhoneCell.innerHTML = item.Phone;
+                        EmailCell.innerHTML = item.Email;
+                        AddressCell.innerHTML = item.Address;
+                        imageCell.innerHTML = `<img width=70px high=70px src='${SERVER + item.image}'>`;
+                        editCell.innerHTML = `<button onclick="edit_data()" style="background-color: rgb(5, 171, 85); color: aliceblue; border-radius: 4px; border: none; width:80px" data-id="${item.id}" class="edit-button">Edit</button>`;
+                        deleteCell.innerHTML = `<button onclick="delete_data()" style="background-color: red; color: aliceblue; border-radius: 4px; border: none; width:80px"  data-id="${item.id}" class="delete-button">Delete</button>`;
+                    })
+                })
+            } else {
+                console.log("the token is empty...")
+                display.innerHTML="<h1>Please login first!</h1>"
+
+            }
+        };
+
+
+
+        ////////////////////edit data /////////////////////////////////////////////////////////////////////////////
+
+        const edit_data = async () => {
+
+
+            if (!token) { token = localStorage.getItem('token') }
+            console.log(token)
+            if (token) {
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+
+
+                const id = event.target.dataset.id;
+                // Get record data from server and display edit form
+                const res = await axios.get(MY_SERVER + id, config)
+                    .then(response => {
+                        const record = response.data;
+                        const form = document.querySelector('#edit-form');
+                        form.style.display = 'block';
+                        form.querySelector('#edit-id').value = record.id;
+                        form.querySelector('#edit-name').value = record.Name;
+                        form.querySelector('#edit-Phone').value = record.Phone;
+                        form.querySelector('#edit-Email').value = record.Email;
+                        form.querySelector('#edit-Address').value = record.Address;
+                        form.querySelector('#edit-image').value = record.image;
+                    })
+
+
+
+
+
+            } else {
+                console.log("the token is empty...")
+            }
+        };
+
+        const edit_data2 = async () => {
+
+            console.log("edit2click");
+            if (!token) { token = localStorage.getItem('token') }
+            console.log(token)
+            if (token) {
+
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+
+                event.preventDefault();
+                const id = document.getElementById('edit-id').value;
+                const name = document.getElementById('edit-name').value;
+                const Phone = document.getElementById('edit-Phone').value;
+                const Email = document.getElementById('edit-Email').value;
+                const Address = document.getElementById('edit-Address').value;
+                const image = document.getElementById('edit-image').files[0];
+                // Send PUT request to server with updated record data
+
+                const formData = new FormData();
+                formData.append('Name', name);
+                formData.append('Phone', Phone);
+                formData.append('Email', Email);
+                formData.append('Address', Address);
+                formData.append('image', image);
+
+
+                const res = axios.put(MY_SERVER + id, formData, config)
+                    .then(response => {
+                        console.log(response.data);
+                        //alert('Item updated!');
+                        form.style.display = 'none';
+
+
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        //alert('Item update failed.');
+                    });
+
+
+
+            } else {
+                console.log("the token is empty...")
+            }
+        };
+
+
+
+
+
+        ////////////////DELETE RECORD////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        const delete_data = async () => {
+
+            console.log("deleteClick");
+            if (!token) { token = localStorage.getItem('token') }
+            console.log(token)
+            if (token) {
+
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                const id = event.target.dataset.id;
+                axios.delete(MY_SERVER + id, config)
+                    .then(response => {
+                        console.log('Item deleted:', response.data);
+                        // Remove row from table
+                        const row = event.target.parentNode.parentNode;
+                        row.parentNode.removeChild(row);
+                    })
+                // Send DELETE request to server with ID
+            } else {
+                console.log("the token is empty...")
+            }
+        };
+
+
+        ////////////////////ADD NEW RECORD/////////////////////////////////////////////////////////////////////////////////////////////////////
+        // const createItemForm = document.getElementById('create-item-form');
+        // createItemForm.addEventListener('submit', (event) => {
+        //   event.preventDefault();
+
+        const AddNew_data = async () => {
+
+            console.log("deleteClick");
+            if (!token) { token = localStorage.getItem('token') }
+            console.log(token)
+            if (token) {
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                const name = document.getElementById('add-name').value;
+                const Phone = document.getElementById('add-Phone').value;
+                const Email = document.getElementById('add-Email').value;
+                const Address = document.getElementById('add-Address').value;
+                const image = document.getElementById('image').files[0];
+
+                const formData = new FormData();
+                formData.append('Name', name);
+                formData.append('Phone', Phone);
+                formData.append('Email', Email);
+                formData.append('Address', Address);
+                formData.append('image', image);
+                axios.post(MY_SERVER, formData, config)
+                    .then(response => {
+                        console.log(response.data);
+                        alert('Item created!');
+                        createItemForm.reset();
+                        load_data();
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        //alert('Item creation failed.');
+                    });
+
+
+            } else {
+                console.log("the token is empty...")
+            }
+        };
+
+    </script>
+    <script>
+        function HideEditForm() {
+            const Editform = document.querySelector('#edit-form');
+            Editform.style.display = 'none';
+        }
+    </script>
+
+
+</body>
+
+</html>
+
+
+</body>
+
+</html>
